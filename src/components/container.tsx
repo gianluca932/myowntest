@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import styles from "./container.module.css";
 import axios from "axios";
 import CONFIG from "./config";
@@ -13,7 +13,12 @@ interface IContainerProps {
 
 const Container: FC<IContainerProps> = ({ name }) => {
   const store = useAppSelector((state) => state);
+
   const dispatch = useAppDispatch();
+
+  const [state, setState] = useState({
+    currentMessage: "",
+  });
 
   const isUserAuthenticated = store.user.id !== "";
 
@@ -80,24 +85,29 @@ const Container: FC<IContainerProps> = ({ name }) => {
     dispatch(loadAllThreads(data));
   }, [store, dispatch]);
 
-  const createMessage = useCallback(async () => {
-    const { data } = await axios.post(
-      `${CONFIG.BASE_URL}${CONFIG.MESSAGES_NEW}`,
-      {
-        text: "Ora dovrei addirittura essere un altro user id :D",
-        threadId: "7c92eb49-b9fd-4bef-85c5-f6fa82c8f181",
-        displayName: "Giovanni Spigoni",
-        checkSum: "string",
-      },
-      {
-        headers: {
-          Authorization: store.user.id,
+  const createMessage = useCallback(
+    async (threadId: string) => {
+      const { data } = await axios.post(
+        `${CONFIG.BASE_URL}${CONFIG.MESSAGES_NEW}`,
+        {
+          text: state.currentMessage,
+          threadId: threadId,
+          displayName: store.user.firstName + " " + store.user.lastName,
+          checkSum: "string",
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: store.user.id,
+          },
+        }
+      );
 
-    console.log("createMessage", data);
-  }, [store]);
+      setState({ ...state, currentMessage: "" });
+      readThread(threadId);
+      console.log("createMessage", data);
+    },
+    [store, state, readThread]
+  );
 
   return (
     <div className={styles.container} data-testid={DATA_TESTIDS.ROOT}>
@@ -108,9 +118,6 @@ const Container: FC<IContainerProps> = ({ name }) => {
       <button onClick={() => createThread()}>Create Thread</button>
 
       <button onClick={() => readAllThreads()}>Read All Threads</button>
-
-      <button onClick={() => createMessage()}>Create Message</button>
-
       <button
         onClick={() => readThread("7c92eb49-b9fd-4bef-85c5-f6fa82c8f181")}
       >
@@ -123,14 +130,17 @@ const Container: FC<IContainerProps> = ({ name }) => {
           <div key={thread.id}>
             <span>{thread.title}</span>- <span>{thread.id}</span>
             <button onClick={() => readThread(thread.id)}>Read Thread</button>
-            {thread.messages !== undefined && thread.messages.length > 0 && (
+            {thread.messages !== undefined && thread.messages.length > 0 ? (
               <div>
                 <h3>Messages</h3>
-                {thread.messages.map((message) => (
+                {thread.messages.map((message, i, thread) => (
                   <div className={styles.messageContainer} key={message.id}>
-                    <label>
-                      {message.displayName} {message.userId}
-                    </label>
+                    {(i === 0 || message.userId !== thread[i - 1].userId) && (
+                      <label>
+                        {message.displayName}{" "}
+                        <p style={{ fontSize: "9px" }}>{message.userId}</p>
+                      </label>
+                    )}
                     <span className={styles.messageBody}>{message.text}</span>
                     <span className={styles.messageFooter}>
                       {message.createdAt}
@@ -138,7 +148,26 @@ const Container: FC<IContainerProps> = ({ name }) => {
                   </div>
                 ))}
               </div>
+            ) : (
+              <div>No messages</div>
             )}
+            <div className={styles.iputMessageContainer}>
+              <label>
+                {store.user.firstName} {store.user.lastName}
+              </label>
+              <input
+                className={styles.messageInputBox}
+                type="text"
+                placeholder="Write your message here"
+                value={state.currentMessage}
+                onChange={(e) => {
+                  setState({ ...state, currentMessage: e.target.value });
+                }}
+              />
+              <button onClick={() => createMessage(thread.id)}>
+                Send Message
+              </button>
+            </div>
           </div>
         ))}
       </div>

@@ -1,0 +1,32 @@
+.container {
+  background-color: white;
+}
+.name {
+  font-weight: 200;
+}
+.statsWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+.messageBody {
+  border-radius: 5px;
+  padding: 10px;
+  background-color: lightblue;
+  color: black;
+  display: block;
+}
+.messageContainer {
+  margin: 10px auto;
+  display: block;
+  width: 200px;
+}
+.messageFooter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: 11px;
+}
+label {
+  font-weight: 600;
+}

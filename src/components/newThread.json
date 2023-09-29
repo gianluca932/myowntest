@@ -1,0 +1,16 @@
+{
+  "id": "7c92eb49-b9fd-4bef-85c5-f6fa82c8f181",
+  "title": "Test Thread",
+  "createdAt": "2023-09-29T16:21:07.442Z",
+  "updatedAt": "2023-09-29T16:21:07.442Z",
+  "deletedAt": null,
+  "createdBy": {
+    "id": "7c7581ab-51b2-48c2-8444-79e59415ce27",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "lab.webevo@gmail.com",
+    "updatedAt": "2023-09-29T15:26:48.265Z",
+    "createdAt": "2023-09-29T15:26:48.265Z",
+    "deletedAt": null
+  }
+}

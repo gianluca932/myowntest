@@ -134,7 +134,14 @@ const Container: FC<IContainerProps> = ({ name }) => {
               <div>
                 <h3>Messages</h3>
                 {thread.messages.map((message, i, thread) => (
-                  <div className={styles.messageContainer} key={message.id}>
+                  <div
+                    className={
+                      store.user.id === message.userId
+                        ? styles.currentlyUserBox
+                        : styles.messageContainer
+                    }
+                    key={message.id}
+                  >
                     {(i === 0 || message.userId !== thread[i - 1].userId) && (
                       <label>
                         {message.displayName}{" "}

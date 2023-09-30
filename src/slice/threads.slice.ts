@@ -1,27 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../../store/store";
-import type { UserState } from "./user.slice";
-
-interface TMessages {
-  id: string;
-  text: string;
-  userId: string;
-  displayName: string;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt: string;
-}
-
-interface TThreads {
-  id: string;
-  title: string;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt: string;
-  createdBy?: UserState;
-  messages?: TMessages[];
-}
-
+import type { RootState } from "../store/store";
+import type { TThreads } from "../types";
 const initialState: TThreads[] = [];
 
 export const ThreadsSlice = createSlice({

@@ -4,5 +4,6 @@
   "EMAIL": "lab.webevo@gmail.com",
   "THREADS_NEW": "threads/new",
   "THREADS": "threads/",
-  "MESSAGES_NEW": "messages/new"
+  "MESSAGES_NEW": "messages/new",
+  "MESSAGES": "messages/"
 }

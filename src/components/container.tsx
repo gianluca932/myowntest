@@ -1,17 +1,16 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import styles from "./container.module.css";
 import axios from "axios";
-import CONFIG from "./config";
+import CONFIG from "../config";
 import { DATA_TESTIDS } from "./defines/data-testids";
 import { useAppSelector, useAppDispatch } from "../hooks/hooks";
-import { authenticate } from "./slice/user.slice";
-import { loadAllThreads, loadSingleThread } from "./slice/threads.slice";
+import { authenticate } from "../slice/user.slice";
+import { loadAllThreads, loadSingleThread } from "../slice/threads.slice";
+import Thread from "./thread/thread";
+import { setupInterceptorsTo } from "./axios/interceptors";
+setupInterceptorsTo(axios);
 
-interface IContainerProps {
-  name: string;
-}
-
-const Container: FC<IContainerProps> = ({ name }) => {
+const Container: FC = () => {
   const store = useAppSelector((state) => state);
 
   const dispatch = useAppDispatch();
@@ -45,7 +44,7 @@ const Container: FC<IContainerProps> = ({ name }) => {
     const { data } = await axios.post(
       `${CONFIG.BASE_URL}${CONFIG.THREADS_NEW}`,
       {
-        title: "Test Thread",
+        title: "Calcetto 2023 - Gruppo Amici",
       },
       {
         headers: {
@@ -73,7 +72,6 @@ const Container: FC<IContainerProps> = ({ name }) => {
     },
     [store, dispatch]
   );
-
   const readAllThreads = useCallback(async () => {
     const { data } = await axios.get(`${CONFIG.BASE_URL}${CONFIG.THREADS}`, {
       headers: {
@@ -86,14 +84,56 @@ const Container: FC<IContainerProps> = ({ name }) => {
   }, [store, dispatch]);
 
   const createMessage = useCallback(
-    async (threadId: string) => {
-      const { data } = await axios.post(
-        `${CONFIG.BASE_URL}${CONFIG.MESSAGES_NEW}`,
+    async (threadId: string, text: string) => {
+      try {
+        const { status } = await axios.post(
+          `${CONFIG.BASE_URL}${CONFIG.MESSAGES_NEW}`,
+          {
+            text,
+            threadId: threadId,
+            displayName: store.user.firstName + " " + store.user.lastName,
+            checkSum: "string",
+          },
+          {
+            headers: {
+              Authorization: store.user.id,
+            },
+          }
+        );
+        if (status !== 200)
+          throw new Error("Endpoint not working, please retry"); // this case endpoint is ok but not 200 is returned
+
+        setState({ ...state, currentMessage: "" });
+        readThread(threadId);
+      } catch (error) {
+        alert("Something went wrong with this, please retry");
+        console.log(error);
+      }
+    },
+    [store, state, readThread]
+  );
+  const deleteMessage = useCallback(
+    async (messageId: string, threadId: string) => {
+      const { data } = await axios.delete(
+        `${CONFIG.BASE_URL}${CONFIG.MESSAGES}` + messageId,
         {
-          text: state.currentMessage,
-          threadId: threadId,
-          displayName: store.user.firstName + " " + store.user.lastName,
-          checkSum: "string",
+          headers: {
+            Authorization: store.user.id,
+          },
+        }
+      );
+      readThread(threadId); // refreshing current thread
+      console.log("deleteMessage", data);
+    },
+    [store, readThread]
+  );
+
+  const updateMessage = useCallback(
+    async (messageId: string, threadId: string) => {
+      const { data } = await axios.patch(
+        `${CONFIG.BASE_URL}${CONFIG.MESSAGES}` + messageId,
+        {
+          text: "My Edited Message",
         },
         {
           headers: {
@@ -101,18 +141,14 @@ const Container: FC<IContainerProps> = ({ name }) => {
           },
         }
       );
-
-      setState({ ...state, currentMessage: "" });
-      readThread(threadId);
-      console.log("createMessage", data);
+      readThread(threadId); // refreshing current thread
+      console.log("updateMessage", data);
     },
-    [store, state, readThread]
+    [store, readThread]
   );
 
   return (
     <div className={styles.container} data-testid={DATA_TESTIDS.ROOT}>
-      <h1 className={styles.name}>{name}</h1>
-
       <h2>Chat</h2>
 
       <button onClick={() => createThread()}>Create Thread</button>
@@ -124,58 +160,17 @@ const Container: FC<IContainerProps> = ({ name }) => {
         Read Thread Not Listed
       </button>
 
-      <div>
-        <h2>Threads</h2>
+      <div className={styles.threadBar}>
         {store.threads.map((thread) => (
-          <div key={thread.id}>
-            <span>{thread.title}</span>- <span>{thread.id}</span>
-            <button onClick={() => readThread(thread.id)}>Read Thread</button>
-            {thread.messages !== undefined && thread.messages.length > 0 ? (
-              <div>
-                <h3>Messages</h3>
-                {thread.messages.map((message, i, thread) => (
-                  <div
-                    className={
-                      store.user.id === message.userId
-                        ? styles.currentlyUserBox
-                        : styles.messageContainer
-                    }
-                    key={message.id}
-                  >
-                    {(i === 0 || message.userId !== thread[i - 1].userId) && (
-                      <label>
-                        {message.displayName}{" "}
-                        <p style={{ fontSize: "9px" }}>{message.userId}</p>
-                      </label>
-                    )}
-                    <span className={styles.messageBody}>{message.text}</span>
-                    <span className={styles.messageFooter}>
-                      {message.createdAt}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div>No messages</div>
-            )}
-            <div className={styles.iputMessageContainer}>
-              <label>
-                {store.user.firstName} {store.user.lastName}
-              </label>
-              <input
-                className={styles.messageInputBox}
-                type="text"
-                placeholder="Write your message here"
-                value={state.currentMessage}
-                onChange={(e) => {
-                  setState({ ...state, currentMessage: e.target.value });
-                }}
-              />
-              <button onClick={() => createMessage(thread.id)}>
-                Send Message
-              </button>
-            </div>
-          </div>
+          <Thread
+            key={thread.id}
+            thread={thread}
+            user={store.user}
+            createMessage={createMessage}
+            updateMessage={updateMessage}
+            deleteMessage={deleteMessage}
+            readThread={readThread}
+          />
         ))}
       </div>
     </div>

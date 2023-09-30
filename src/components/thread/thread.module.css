@@ -1,0 +1,26 @@
+.chatContainer {
+  margin: 10px auto;
+  border: 1px solid black;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  width: 80%;
+
+  margin: 10px auto;
+}
+.chatHeader {
+  background-color: blue;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px 5px 0 0;
+  text-align: left;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+}
+.chatHeaderActions {
+  width: 5%;
+}
+.chatHeaderTitle {
+  width: 95%;
+}
+.threadContainer {
+}

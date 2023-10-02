@@ -9,11 +9,7 @@ interface ChatMessagesProps {
   threadId: string;
   currentUserId: string;
   onDeleteMessage: (id: string, threadId: string) => void;
-  onUpdateMessage: (id: string, threadId: string) => void;
-}
-
-interface listUserColor {
-  [user: string]: string;
+  onUpdateMessage: (id: string, threadId: string, message: string) => void;
 }
 
 const ChatMessages = ({
@@ -27,16 +23,8 @@ const ChatMessages = ({
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  const listUserColors: listUserColor = {};
-
   const returnUserColor = (userId: string) => {
-    // Removed the array type declaration
-    if (listUserColors[userId] === undefined) {
-      listUserColors[userId] = `#${Math.floor(
-        Math.random() * 16777215
-      ).toString(16)}`;
-    }
-    return listUserColors[userId];
+    return "#00" + userId.slice(0, 6);
   };
 
   return (
@@ -70,7 +58,7 @@ const ChatMessages = ({
                 {parseDate(message.createdAt)}
 
                 {message.updatedAt !== message.createdAt && (
-                  <>- Edited({parseDate(message.updatedAt)}</>
+                  <>-Edited{parseDate(message.updatedAt)}</>
                 )}
               </div>
               <div className={styles.messageActions}>
@@ -84,7 +72,7 @@ const ChatMessages = ({
                 <EditIcon
                   className={styles.icons}
                   onClick={() => {
-                    onUpdateMessage(message.id, threadId);
+                    onUpdateMessage(message.id, threadId, message.text);
                   }}
                 />
               </div>

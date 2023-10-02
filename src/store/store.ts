@@ -5,7 +5,7 @@ import userSlice from "../slice/user.slice";
 import threadsSlice from "../slice/threads.slice";
 
 const persistConfig = {
-  key: "root",
+  key: "rootdddd",
   storage,
 };
 

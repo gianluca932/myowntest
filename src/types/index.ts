@@ -17,8 +17,7 @@ export interface TThreads {
   createdBy?: UserState;
   messages?: TMessages[];
 }
-
-export interface UserState {
+export interface TUser {
   id: string;
   firstName: string;
   lastName: string;
@@ -26,4 +25,10 @@ export interface UserState {
   updatedAt: string;
   createdAt: string;
   deletedAt: string;
+}
+
+export interface UserState {
+  user: TUser;
+  status: "idle" | "loading" | "failed" | "succeeded";
+  error: string | undefined;
 }

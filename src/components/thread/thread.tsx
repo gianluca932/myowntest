@@ -2,17 +2,17 @@ import styles from "./thread.module.css";
 import { useState } from "react";
 import ChatBox from "../chatBox/chat-box";
 import ChatMessages from "../chatMessages/chat-messages";
-import { TThreads, UserState } from "../../types";
+import { TThreads, TUser } from "../../types";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 
 interface IThreadProps {
   thread: TThreads;
-  user: UserState;
+  user: TUser;
   readThread: (id: string) => void;
   createMessage: (threadId: string, text: string) => void;
   deleteMessage: (threadId: string, messageId: string) => void;
-  updateMessage: (threadId: string, messageId: string) => void;
+  updateMessage: (threadId: string, messageId: string, message: string) => void;
 }
 
 const Thread = ({
@@ -32,6 +32,7 @@ const Thread = ({
     setState({ ...state, isClosed: !state.isClosed });
   };
 
+  console.log(user, "user");
   return (
     <div key={thread.id} className={styles.chatContainer}>
       <div className={styles.chatHeader}>
@@ -63,9 +64,10 @@ const Thread = ({
             <div>No messages</div>
           )}
           <ChatBox
-            threadId={thread.id}
+            thread={thread}
             currentUserId={user.id}
             onCreateMessage={createMessage}
+            onUpdateMessage={updateMessage}
             displayName={user.firstName + " " + user.lastName}
           />
         </div>

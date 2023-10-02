@@ -4,7 +4,8 @@ import axios from "axios";
 import CONFIG from "../config";
 import { DATA_TESTIDS } from "./defines/data-testids";
 import { useAppSelector, useAppDispatch } from "../hooks/hooks";
-import { authenticate } from "../slice/user.slice";
+import { getUser, getUserStatus } from "../slice/user.slice";
+import { authenticateUser } from "../slice/thunks/users";
 import { loadAllThreads, loadSingleThread } from "../slice/threads.slice";
 import Thread from "./thread/thread";
 import { setupInterceptorsTo } from "./axios/interceptors";
@@ -12,35 +13,24 @@ setupInterceptorsTo(axios);
 
 const Container: FC = () => {
   const store = useAppSelector((state) => state);
-
   const dispatch = useAppDispatch();
+
+  const userStatus = useAppSelector(getUserStatus);
+  const user = useAppSelector(getUser);
+  console.log("user", user, userStatus);
+  useEffect(() => {
+    if (userStatus === "idle") {
+      dispatch(authenticateUser());
+    }
+  }, [userStatus, dispatch]);
 
   const [state, setState] = useState({
     currentMessage: "",
   });
 
-  const isUserAuthenticated = store.user.id !== "";
-
   console.log("state", store);
 
-  const authenticateUser = useCallback(async () => {
-    const { data } = await axios.post(
-      `${CONFIG.BASE_URL}${CONFIG.AUTHENTICATION}`,
-      {
-        email: CONFIG.EMAIL,
-      }
-    );
-
-    dispatch(authenticate(data));
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!isUserAuthenticated) {
-      authenticateUser();
-    }
-  }, [isUserAuthenticated, authenticateUser]);
-
-  const createThread = useCallback(async () => {
+  const createThread = async () => {
     const { data } = await axios.post(
       `${CONFIG.BASE_URL}${CONFIG.THREADS_NEW}`,
       {
@@ -48,21 +38,22 @@ const Container: FC = () => {
       },
       {
         headers: {
-          Authorization: store.user.id,
+          Authorization: user.id,
         },
       }
     );
 
     console.log("createThread", data);
-  }, [store]);
+  };
 
   const readThread = useCallback(
     async (id: string) => {
+      const { id: IdUser } = user;
       const { data } = await axios.get(
         `${CONFIG.BASE_URL}${CONFIG.THREADS}` + id,
         {
           headers: {
-            Authorization: store.user.id,
+            Authorization: IdUser,
           },
         }
       );
@@ -70,33 +61,35 @@ const Container: FC = () => {
       dispatch(loadSingleThread(data));
       console.log("readThread", data);
     },
-    [store, dispatch]
+    [user, dispatch]
   );
   const readAllThreads = useCallback(async () => {
+    const { id: IdUser } = user;
     const { data } = await axios.get(`${CONFIG.BASE_URL}${CONFIG.THREADS}`, {
       headers: {
-        Authorization: store.user.id,
+        Authorization: IdUser,
       },
     });
     console.log("readAllThread", data);
 
     dispatch(loadAllThreads(data));
-  }, [store, dispatch]);
+  }, [user, dispatch]);
 
   const createMessage = useCallback(
     async (threadId: string, text: string) => {
+      const { id, firstName, lastName } = user;
       try {
         const { status } = await axios.post(
           `${CONFIG.BASE_URL}${CONFIG.MESSAGES_NEW}`,
           {
             text,
             threadId: threadId,
-            displayName: store.user.firstName + " " + store.user.lastName,
+            displayName: firstName + " " + lastName,
             checkSum: "string",
           },
           {
             headers: {
-              Authorization: store.user.id,
+              Authorization: id,
             },
           }
         );
@@ -110,47 +103,56 @@ const Container: FC = () => {
         console.log(error);
       }
     },
-    [store, state, readThread]
+    [user, state, readThread]
   );
   const deleteMessage = useCallback(
     async (messageId: string, threadId: string) => {
+      const { id: IdUser } = user;
+
       const { data } = await axios.delete(
         `${CONFIG.BASE_URL}${CONFIG.MESSAGES}` + messageId,
         {
           headers: {
-            Authorization: store.user.id,
+            Authorization: IdUser,
           },
         }
       );
       readThread(threadId); // refreshing current thread
       console.log("deleteMessage", data);
     },
-    [store, readThread]
+    [user, readThread]
   );
 
   const updateMessage = useCallback(
-    async (messageId: string, threadId: string) => {
+    async (threadId: string, messageId: string, message: string) => {
+      console.log(threadId, messageId, message);
+      const { id: IdUser } = user;
+
+      let text = prompt("Please enter your name", message);
+      if (text == null || text === "") {
+        alert("EditedMessage must be filled out");
+        return false;
+      }
+
       const { data } = await axios.patch(
         `${CONFIG.BASE_URL}${CONFIG.MESSAGES}` + messageId,
         {
-          text: "My Edited Message",
+          text,
         },
         {
           headers: {
-            Authorization: store.user.id,
+            Authorization: IdUser,
           },
         }
       );
       readThread(threadId); // refreshing current thread
       console.log("updateMessage", data);
     },
-    [store, readThread]
+    [user, readThread]
   );
 
   return (
     <div className={styles.container} data-testid={DATA_TESTIDS.ROOT}>
-      <h2>Chat</h2>
-
       <button onClick={() => createThread()}>Create Thread</button>
 
       <button onClick={() => readAllThreads()}>Read All Threads</button>
@@ -165,7 +167,7 @@ const Container: FC = () => {
           <Thread
             key={thread.id}
             thread={thread}
-            user={store.user}
+            user={user}
             createMessage={createMessage}
             updateMessage={updateMessage}
             deleteMessage={deleteMessage}

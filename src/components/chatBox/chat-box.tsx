@@ -1,10 +1,11 @@
 import styles from "./chat-box.module.css";
 import { useMemo, useState } from "react";
 import { TThreads } from "../../types";
+import { useAppDispatch } from "../../hooks/hooks";
+import { createMessage } from "../../slice/thunks/messages";
 interface ChatBoxProps {
   thread: TThreads;
   currentUserId: string;
-  onCreateMessage: (threadId: string, text: string) => void;
   onUpdateMessage: (
     threadId: string,
     messageId: string,
@@ -16,7 +17,6 @@ interface ChatBoxProps {
 const ChatBox = ({
   thread,
   currentUserId,
-  onCreateMessage,
   onUpdateMessage,
   displayName,
 }: ChatBoxProps) => {
@@ -37,6 +37,8 @@ const ChatBox = ({
 
     return lastMessageByUserId;
   }, [thread, currentUserId]);
+
+  const dispatch = useAppDispatch();
 
   const handleKeyUp = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === "ArrowUp") {
@@ -66,7 +68,14 @@ const ChatBox = ({
         <button
           className={styles.chatBoxButton}
           onClick={() => {
-            onCreateMessage(thread.id, state.currentMessage);
+            dispatch(
+              createMessage({
+                authId: currentUserId,
+                threadId: thread.id,
+                text: state.currentMessage,
+                displayName,
+              })
+            );
             setState({ ...state, currentMessage: "" });
           }}
         >

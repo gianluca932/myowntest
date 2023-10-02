@@ -43,8 +43,6 @@ export const UserSlice = createSlice({
   },
 });
 
-export const { authenticate } = UserSlice.actions;
-
 export const getUser = (state: RootState) => state.user.user;
 export const getUserStatus = (state: RootState) => state.user.status;
 export const getUserError = (state: RootState) => state.user.error;

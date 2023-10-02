@@ -5,12 +5,12 @@ import ChatMessages from "../chatMessages/chat-messages";
 import { TThreads, TUser } from "../../types";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import { readThread } from "../../slice/thunks/threads";
+import { useAppDispatch } from "../../hooks/hooks";
 
 interface IThreadProps {
   thread: TThreads;
   user: TUser;
-  readThread: (id: string) => void;
-  createMessage: (threadId: string, text: string) => void;
   deleteMessage: (threadId: string, messageId: string) => void;
   updateMessage: (threadId: string, messageId: string, message: string) => void;
 }
@@ -18,8 +18,6 @@ interface IThreadProps {
 const Thread = ({
   thread,
   user,
-  readThread,
-  createMessage,
   deleteMessage,
   updateMessage,
 }: IThreadProps) => {
@@ -27,8 +25,11 @@ const Thread = ({
     isClosed: true,
   });
 
+  const dispatch = useAppDispatch();
+
   const toggleThread = () => {
-    if (state.isClosed) readThread(thread.id);
+    if (state.isClosed)
+      dispatch(readThread({ id: thread.id, authId: user.id }));
     setState({ ...state, isClosed: !state.isClosed });
   };
 
@@ -66,7 +67,6 @@ const Thread = ({
           <ChatBox
             thread={thread}
             currentUserId={user.id}
-            onCreateMessage={createMessage}
             onUpdateMessage={updateMessage}
             displayName={user.firstName + " " + user.lastName}
           />

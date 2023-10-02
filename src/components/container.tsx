@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect } from "react";
 import styles from "./container.module.css";
 import axios from "axios";
 import CONFIG from "../slice/config";
-import { DATA_TESTIDS } from "./defines/data-testids";
+import { DATA_TESTIDS } from "../defines/data-testids";
 import { useAppSelector, useAppDispatch } from "../hooks/hooks";
 import { getUser, getUserStatus } from "../slice/user.slice";
 import { authenticateUser } from "../slice/thunks/users";

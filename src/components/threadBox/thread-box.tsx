@@ -1,4 +1,4 @@
-import styles from "./thread.module.css";
+import styles from "./thread-box.module.css";
 import { useState } from "react";
 import ChatBox from "../chatBox/chat-box";
 import ChatMessages from "../chatMessages/chat-messages";
@@ -33,7 +33,6 @@ const Thread = ({
     setState({ ...state, isClosed: !state.isClosed });
   };
 
-  console.log(user, "user");
   return (
     <div key={thread.id} className={styles.chatContainer}>
       <div className={styles.chatHeader}>

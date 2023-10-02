@@ -14,7 +14,6 @@ const onResponse = (response: AxiosResponse): Promise<AxiosResponse> => {
         resolve(response);
       }, 3000);
     } else {
-      console.log("Network Delay not Enabled");
       resolve(response);
     }
   });

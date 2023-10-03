@@ -6,11 +6,7 @@ import { createMessage } from "../../slice/thunks/messages";
 interface ChatBoxProps {
   thread: TThreads;
   currentUserId: string;
-  onUpdateMessage: (
-    threadId: string,
-    messageId: string,
-    message: string
-  ) => void;
+  onUpdateMessage: (messageId: string, message: string) => void;
   displayName: string;
 }
 
@@ -45,7 +41,7 @@ const ChatBox = ({
         alert("No message to edit");
         return false;
       }
-      onUpdateMessage(thread.id, lastMessage.id, lastMessage.text);
+      onUpdateMessage(lastMessage.id, lastMessage.text);
     }
   };
 

@@ -1,7 +1,6 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useEffect } from "react";
 import styles from "./container.module.css";
 import axios from "axios";
-import CONFIG from "../slice/config";
 import { DATA_TESTIDS } from "../defines/data-testids";
 import { useAppSelector, useAppDispatch } from "../hooks/hooks";
 import { getUser, getUserStatus } from "../slice/user.slice";
@@ -13,6 +12,7 @@ import {
   readThread,
   createThread,
 } from "../slice/thunks/threads";
+
 setupInterceptorsTo(axios);
 
 const Container: FC = () => {
@@ -27,54 +27,6 @@ const Container: FC = () => {
       dispatch(authenticateUser());
     }
   }, [userStatus, dispatch]);
-
-  console.log("state", store);
-
-  const deleteMessage = useCallback(
-    async (messageId: string, threadId: string) => {
-      const { id: IdUser } = user;
-
-      const { data } = await axios.delete(
-        `${CONFIG.BASE_URL}${CONFIG.MESSAGES}` + messageId,
-        {
-          headers: {
-            Authorization: IdUser,
-          },
-        }
-      );
-
-      console.log("deleteMessage", data);
-    },
-    [user]
-  );
-
-  const updateMessage = useCallback(
-    async (threadId: string, messageId: string, message: string) => {
-      console.log(threadId, messageId, message);
-      const { id: IdUser } = user;
-
-      let text = prompt("Please enter your name", message);
-      if (text == null || text === "") {
-        alert("EditedMessage must be filled out");
-        return false;
-      }
-
-      const { data } = await axios.patch(
-        `${CONFIG.BASE_URL}${CONFIG.MESSAGES}` + messageId,
-        {
-          text,
-        },
-        {
-          headers: {
-            Authorization: IdUser,
-          },
-        }
-      );
-
-      console.log("updateMessage", data);
-    },
-    [user]
-  );
 
   return (
     <div className={styles.container} data-testid={DATA_TESTIDS.ROOT}>
@@ -106,13 +58,7 @@ const Container: FC = () => {
 
       <div className={styles.threadBar}>
         {store.threads.map((thread) => (
-          <Thread
-            key={thread.id}
-            thread={thread}
-            user={user}
-            updateMessage={updateMessage}
-            deleteMessage={deleteMessage}
-          />
+          <Thread key={thread.id} thread={thread} user={user} />
         ))}
       </div>
     </div>

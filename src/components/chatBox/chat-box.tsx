@@ -30,7 +30,6 @@ const ChatBox = ({
     const messageByUserId = thread.messages.filter(
       (thread) => thread.userId === currentUserId
     );
-    console.log(messageByUserId, currentUserId);
     const lastMessageByUserId =
       messageByUserId !== undefined &&
       messageByUserId[messageByUserId.length - 1];

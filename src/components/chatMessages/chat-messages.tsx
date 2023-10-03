@@ -4,24 +4,27 @@ import EditIcon from "@mui/icons-material/Edit";
 import { parseDate } from "../../utils";
 import type { TMessages } from "../../types";
 import Avatar from "../avatar/avatar";
+import { deleteMessage } from "../../slice/thunks/messages";
+import { useAppDispatch } from "../../hooks/hooks";
+
 interface ChatMessagesProps {
   messages: TMessages[];
   threadId: string;
   currentUserId: string;
-  onDeleteMessage: (id: string, threadId: string) => void;
-  onUpdateMessage: (id: string, threadId: string, message: string) => void;
+  onUpdateMessage: (messageId: string, message: string) => void;
 }
 
 const ChatMessages = ({
   messages,
   threadId,
   currentUserId,
-  onDeleteMessage,
   onUpdateMessage,
 }: ChatMessagesProps) => {
   const sortedMessagedByTime = [...messages].sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
+
+  const dispatch = useAppDispatch();
 
   const returnUserColor = (userId: string) => {
     return "#00" + userId.slice(0, 6);
@@ -66,13 +69,18 @@ const ChatMessages = ({
                   className={styles.icons}
                   onClick={() => {
                     window.confirm("Do you want to delete the message?") &&
-                      onDeleteMessage(message.id, threadId);
+                      dispatch(
+                        deleteMessage({
+                          authId: currentUserId,
+                          messageId: message.id,
+                        })
+                      );
                   }}
                 />
                 <EditIcon
                   className={styles.icons}
                   onClick={() => {
-                    onUpdateMessage(message.id, threadId, message.text);
+                    onUpdateMessage(message.id, message.text);
                   }}
                 />
               </div>
